@@ -1283,7 +1283,7 @@ def main2(test=None):
 
         emails = []
         for x in destino:
-            if re.match(f"^{codDDI}[0-9].*$", x):
+            if re.match(f"^({codDDI})?\d+(-)?\d+(@g\.us)?", x):
                 send_whatsapp(x, item_type, get_graph, codeKey)
 
             elif re.search("^.*@[a-z0-9-]+\.[a-z]+(\.[a-z].*)?$", x.lower()):
