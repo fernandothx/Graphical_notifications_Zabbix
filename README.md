@@ -75,7 +75,7 @@ O "How to" foi testado no ZABBIX 2.4 ao 5.4 no Debian 8 ao 10, Ubuntu 14 ao 20 e
 	</li>	
 	<li>
 		<strong>
-			<a href=#configurando-o-envio>Configuração do front</a>
+			<a href=#configurando-envio>Configuração do front</a>
 		</strong>
 	</li>
 	<li>
@@ -311,9 +311,9 @@ ou
 ou
 <pre>sudo -u zabbix ./notificacoes-teste.py --send "usuário"</pre>
 
-# Configurando o envio:
+# Configurando envio:
 
-Com o script adicionado no local indicado acima, precisamos realizar algumas configurações no Front do ZABBIX, no <i>"Tipo de Mídia"</i>, (em Administração  > Tipo de Mídia) e a <i>"Ação"</i> (em Configuração  > Ações).
+Com o script adicionado no local indicado acima, precisamos realizar algumas configurações no Front do ZABBIX, no <i>"Tipo de Mídia"</i>, (em Administração > Tipo de Mídia) e na <i>"Ação"</i> (em Configuração > Ações).
 
 <h3>
 Tipo de Mídia
@@ -360,7 +360,7 @@ Imagem da Mensagem:
 <b>Duração:</b> {EVENT.DURATION}</pre>
 
 <b>OBS:</b><br>Os valores
-<i><b>”FF0000” ou ”00C800”</b></i> são os apontamentos para as cores da linha do gráfico
+<i><b>”FF0000” ou ”00C800”</b></i> são apontamentos para as informar a lista de cores que será utilizada na linha do gráfico
 (alarme ou normalização), e <i><b>”10800” ou ”3600”</b></i> é o período do gráfico (3h ou 1h) em segundos.<br><br>
 
 <h3><a id="user-content-features" class="anchor" href="#features" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" role="img" version="1.1" viewBox="0 0 16 16" width="16"><path d="M4 9h1v1h-1c-1.5 0-3-1.69-3-3.5s1.55-3.5 3-3.5h4c1.45 0 3 1.69 3 3.5 0 1.41-0.91 2.72-2 3.25v-1.16c0.58-0.45 1-1.27 1-2.09 0-1.28-1.02-2.5-2-2.5H4c-0.98 0-2 1.22-2 2.5s1 2.5 2 2.5z m9-3h-1v1h1c1 0 2 1.22 2 2.5s-1.02 2.5-2 2.5H9c-0.98 0-2-1.22-2-2.5 0-0.83 0.42-1.64 1-2.09v-1.16c-1.09 0.53-2 1.84-2 3.25 0 1.81 1.55 3.5 3 3.5h4c1.45 0 3-1.69 3-3.5s-1.5-3.5-3-3.5z"></path></svg></a>
@@ -455,11 +455,13 @@ e aos que participam mais ativamente ajudando, sugerindo, pontuando, indicando m
 - A criação deste projeto unificado (email e telegram), foi depois de uma conversa e o de "Everaldo Santos Cabral" 
 (<a href="https://t.me/everaldoscabral" class="wikilink2" title="Conversar com ele" rel="nofollow">@everaldoscabral</a>) 
 dizer que a informação do arquivo de configuração era "inútil" pra quem usava somente um projeto, e isso me deu um luz para fazer algo diferente.
+<br><br>
 
 - Hoje os projetos tem tantas melhorias e aprimoramentos, muito graças ao "Abner Klug" 
 (<a href="https://t.me/abnerk" class="wikilink2" title="Conversar com ele" rel="nofollow">@abnerk</a>), 
 que sempre trouxe várias ideias, como colocar opção ao ack, a saudação, dentre outras...
-Todos podem ajudar para fazermos uma comunidade mais forte e projetos cada vez melhores.
+Todos podem colaborar para fazermos uma comunidade mais forte e projetos cada vez melhores.
+<br><br>
 
 - Ao "Gabriel R F" 
 (<a href="https://t.me/GabrielRF" class="wikilink2" title="Conversar com ele" rel="nofollow">@GabrielRF</a>) 
