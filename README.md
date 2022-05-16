@@ -121,7 +121,7 @@ Instale os pacotes:
 <pre>sudo apt-get install -y wget dos2unix git sudo curl bc</pre>
 
 <blockquote> <p>CentOS 6.x, 7 e 8</p> </blockquote>
-<pre>sudo yum install -y wget dos2unix git sudo curl bc</pre>
+<pre>sudo yum install -y wget dos2unix git sudo curl bc gcc libffi-devel python-devel openssl-devel libevent-devel</pre>
 
 <blockquote> <p>Faça o download do script de instalação</p> </blockquote>
 <pre>cd /tmp ; wget https://raw.githubusercontent.com/sansaoipb/scripts/master/notificacoes.sh -O notificacoes.sh ; sudo dos2unix notificacoes.sh ; sudo bash notificacoes.sh</pre>
