@@ -34,7 +34,7 @@
 # Graphical Notifications Zabbix
 Em caso de dúvida, sugestão ou dificuldade junte-se a nós no <b>Grupo do Telegram</b> <a href="https://t.me/joinchat/cK5rSq8My8hjOTkx" class="wikilink2" title="Ingressar no Grupo" rel="nofollow">Gráfico no Email e Telegram</a>.
 
-O "How to" foi testado no ZABBIX 2.4 ao 5.4 no Debian 8 ao 10, Ubuntu 14 ao 20 e CentOS 6.x ao 8, caso não utilize estas distros procure os pacotes descritos para sua necessidade.
+O "How to" foi testado no ZABBIX 2.4 ao 6.0 no Debian 8 ao 11, Ubuntu 14 ao 20 e CentOS 6.x ao 8, caso não utilize estas distros procure os pacotes descritos para sua necessidade.
 
 <!--
 # Acompanhe no Vídeo:
@@ -109,7 +109,7 @@ O "How to" foi testado no ZABBIX 2.4 ao 5.4 no Debian 8 ao 10, Ubuntu 14 ao 20 e
 <blockquote>Caso necessário, habilite como o comando abaixo e troque a senha:</blockquote>
 <pre>sudo usermod -s /bin/bash zabbix ; sudo passwd zabbix</pre>
 -->
-<b>0 – </b> Ter instalado Python 3.6 (ou superior)<br>
+<b>0 – </b> Ter instalado Python 3.9 (ou superior)<br>
 <b>1 – </b> Estar logado como root<br>
 <b>2 – </b> Executar os seguintes comandos<br>
 
@@ -176,9 +176,17 @@ Para iniciarmos a configuração de envio, é preciso editar o arquivo de config
 <b>OBS:</b><br>
 <b>1 – </b>O usuário que você declarar no campo <i>“user”</i> precisa ter permissão no mínimo de leitura no ambiente.<br>
 <b>2 – </b>Os campos contidos em [PathSectionEmail], [PathSectionTelegram] e [PathSectionWhatsApp], são opcionais, logo se for usar somente telegram, não é necessário preencher a parte do email, assim como de forma inversa.<br>
+<b>3 – </b>Se usar gmail, é preciso alterar o acesso à conta para aplicativos, é necessário criar uma "Senha de app", 
+<a href="https://support.google.com/accounts/answer/185833?hl=pt-BR" class="wikilink2" title="App MAIS seguros" rel="nofollow">CRIE AQUI</a>.<br>
+
+<!--
+"App menos seguro" foi descontinuado em 30/05/2022
+Fonte: https://www.projetoacbr.com.br/forum/topic/66440-google-vai-deixar-de-oferecer-suporte-para-o-uso-de-apps-menos-seguros-e-a-conta-do-google-v%C3%A1lida-a-partir-de%C2%A030-de-maio-de-2022/
+
 <b>3 – </b>Se usar gmail, é preciso alterar o acesso à conta para aplicativos, se tiver "Verificação em duas etapas" ativado, é necessário criar uma "Senha de app", crie 
 <a href="https://support.google.com/accounts/answer/185833?hl=pt-BR" class="wikilink2" title="App MAIS seguros" rel="nofollow">Aqui</a>.<br>Caso não tenha verificação em duas etapas, pode somente ativar "Acesso a app menos seguros", altere 
 <a href="https://support.google.com/accounts/answer/6010255?hl=pt-BR" class="wikilink2" title="App menos seguros" rel="nofollow">Aqui</a>.<br>
+-->
 
 <blockquote>[PathSection]</blockquote>
 
