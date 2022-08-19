@@ -22,9 +22,14 @@
 # Eracydes Carvalho (Sansão Simonton) - Monitoring Specialist - Telegram: @sansaoipb
 # Thiago Paz - NOC Analyst - thiagopaz1986@gmail.com
 
-pythonVersion = 3.6
-import os, sys, re, json, time, smtplib
+import os
+import re
+import sys
+import time
+import json
+import smtplib
 
+pythonVersion = 3.6
 if len(sys.argv) == 1:
     sys.argv.append("-h")
 
@@ -242,7 +247,13 @@ message.whatsapp = WhatsApp enviado com sucesso
 cod.ddi = 55
 line = 5511950287353
 acess.key = XGja6Sgtz0F01rbWNDTc
-port = 13008"""
+port = 13008
+
+[PathSectionProxy]
+proxy.hostname = no
+proxy.port = no
+proxy.username = no
+proxy.password = no"""
 
 if not os.path.exists(arqConfig):
     contArq = configDefault
@@ -275,14 +286,13 @@ else:
         contArq += f"{lineIn}\n"
         continue
 
-    contArq = f"{contArq.rstrip()}\n\n"
+    contArq = f"{contArq.rstrip()}\n"
 
 arquivo = open(f"{arqConfig}", "w")
 arquivo.writelines(contArq)
 arquivo.close()
 
 import logging.config
-import traceback
 
 file = """{
     "version": 1,
@@ -366,9 +376,33 @@ log = Log
 nograph = "--nograph"
 
 
-def destinatarios(dest):
-    destinatario = ["{0}".format(hostsW).strip().rstrip() for hostsW in dest.split(",")]
+def destinatarios(dests):
+    destinatario = ["{0}".format(dest).strip().rstrip() for dest in dests.split(",")]
     return destinatario
+
+
+def getProxy():
+    Proxy = {}
+    validaProxy = {0: 'hostname', 1: 'port', 2: 'username', 3: 'password'}
+
+    proxyHostname = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionProxy', 'proxy.hostname')
+    proxyPort = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionProxy', 'proxy.port')
+    proxyUsername = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionProxy', 'proxy.username')
+    proxyPassword = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionProxy', 'proxy.password')
+
+    validaVars = [proxyHostname, proxyPort, proxyUsername, proxyPassword]
+    for y in range(len(validaVars)):
+        if not re.search("no", f"{validaVars[y]}"):
+            valor = validaVars[y]
+            if y == 1:
+                valor = int(validaVars[y])
+
+            Proxy[validaProxy[y]] = valor
+
+    if not Proxy:
+        Proxy = None
+
+    return Proxy
 
 
 def send_mail(dest, itemType, get_graph, key):
@@ -478,7 +512,7 @@ def send_mail(dest, itemType, get_graph, key):
         exit()
 
 
-def send_telegram(dest, itemType, get_graph, key, triggerid):
+def send_telegram(dest, itemType, get_graph, key, triggerid, valueProxy):
     # Telegram settings | Configuracao do Telegram #####################################################################
     api_id0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.id')
     api_hash0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.hash')
@@ -494,7 +528,7 @@ def send_telegram(dest, itemType, get_graph, key, triggerid):
     except:
         api_hash = api_hash0
 
-    app = Client("SendGraph", api_id=api_id, api_hash=api_hash)
+    app = Client("SendGraph", api_id=api_id, api_hash=api_hash, proxy=valueProxy)
 
     dest = dest.lower()
     saudacao = salutation
@@ -541,7 +575,7 @@ def send_telegram(dest, itemType, get_graph, key, triggerid):
 
             try:
                 if flag:
-                    Dialogos = app.iter_dialogs()
+                    Dialogos = app.get_dialogs()
                     for dialogo in Dialogos:
                         Id = f"{dialogo.chat.id}"
                         if dialogo.chat.title:
@@ -669,21 +703,15 @@ def send_whatsapp(destiny, itemType, get_graph, key):
 
     msg0 = body.replace("\r", "").split('\n ')[0].replace("\n", "\\n")
     msg = "{}\\n{}".format(subject.replace(r"✅", r"\u2705"), msg0)
-    message0 = "{}{}".format(saudacao, msg)
+    message = "{}{}".format(saudacao, msg)
 
-    valida = 0
-    message1 = ""
     formatter = [("b", "*"), ("i", "_"), ("u", "")]
     for f in formatter:
         old, new = f
-        if re.search(r"(<(/)?{}>)".format(old), message0):
-            message1 = re.sub(r"(<(/)?{}>)".format(old), r"{}".format(new), message0)
-            valida += 1
+        if re.search(r"(<(/)?{}>)".format(old), message):
+            message = re.sub(fr"(<(/)?{old}>)", new, message)
 
-    if valida == 0:
-        message1 = message0
-
-    message = quote(base64.b64encode(message1.encode("utf-8")))
+    message = quote(base64.b64encode(message.encode("utf-8")))
     if re.search("(0|3)", itemType):
         Graph = quote(base64.b64encode(get_graph.content))  # .decode("ISO-8859-1"))
         try:
@@ -890,7 +918,7 @@ def getgraph(period):
             periodM = segundos_rest // 60
             periodS = segundos_rest % 60
 
-            Nome = f"{triggerName} {{}}"
+            Nome = f"{quote(triggerName)} {{}}"
             if periodD > 0:
                 period = "from=now-{0}d-{1}h-{2}m&to=now".format(periodD, periodH, periodM)
                 nome_tempo = Nome.format(f"({periodD}d {periodH}h:{periodM}m)")
@@ -1026,7 +1054,7 @@ def getTrigger(triggerId=None):
         exit()
 
 
-def get_info(name=None):
+def get_info(valueProxy, name=None):
     # Telegram settings | Configuracao do Telegram #########################################################################
     api_id0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.id')
     api_hash0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.hash')
@@ -1041,14 +1069,14 @@ def get_info(name=None):
     except:
         api_hash = api_hash0
 
-    app = Client("SendGraph", api_id=api_id, api_hash=api_hash)
+    app = Client("SendGraph", api_id=api_id, api_hash=api_hash, proxy=valueProxy)
     ContA = 0
     with app:
         infos = ""
         try:
-            dialogos = app.iter_dialogs()
+            dialogos = app.get_dialogs()
         except Exception as msg:
-            if "BOT" in msg.args[0]:
+            if "BOT_METHOD_INVALID" in msg.args[0]:
                 print("\nEsta função não está disponível para consultas com BOT\n")
             else:
                 print(msg.args[0])
@@ -1061,7 +1089,7 @@ def get_info(name=None):
             for dialogo in dialogos:
                 tipos = {"group": "Grupo", "supergroup": "Super Grupo", "bot": "BOT", "channel": "Canal",
                          "private": "Usuário"}
-                tipo = f"Tipo: {tipos[dialogo.chat.type]}"
+                tipo = f"Tipo: {tipos[dialogo.chat.type.value]}"
                 Id = f"Id: {dialogo.chat.id}"
                 if dialogo.chat.title or '777000' in Id:
                     nome = "Nome: {}".format(dialogo.chat.title or dialogo.chat.first_name)
@@ -1233,8 +1261,7 @@ def get_input(prompt1, prompt2):
     while True:
         L.append(input(prompt))
         if input_complete(L):
-            return "\n".join(L).replace("--test", "").strip().rstrip()
-        print()
+            return "\n".join(L).replace("--test", "").strip()
         prompt = prompt2
 
 
@@ -1265,7 +1292,7 @@ def send(msg=False):
     return triggerid, item_type, period
 
 
-def main2(test=None):
+def main2(proxy, test=None):
     inicio = time.time()
     codDDI = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'cod.ddi')
 
@@ -1291,9 +1318,9 @@ def main2(test=None):
 
             else:
                 telegram = x.replace("_", " ")
-                send_telegram(telegram, item_type, get_graph, codeKey, triggerid)
+                send_telegram(telegram, item_type, get_graph, codeKey, triggerid, proxy)
 
-        if [] != emails:
+        if emails:
             send_mail(emails, item_type, get_graph, codeKey)
 
         fim = time.time()
@@ -1310,6 +1337,7 @@ def main():
     global auth, codeKey
     JSON = create_file()
     codeKey = JSON['code']
+    proxy = getProxy()
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', '--infoAll', action="store_true", help="Consult all information")
@@ -1340,13 +1368,13 @@ def main():
 
     elif args.destiny:
         auth = token()
-        main2()
+        main2(proxy)
         logout_api()
         exit()
 
     elif args.argvs_Environment:
         auth = token()
-        main2(True)
+        main2(proxy, True)
         logout_api()
         exit()
 
@@ -1356,7 +1384,7 @@ def main():
     elif args.infoAll:
         nome = None
 
-    r = get_info(nome)
+    r = get_info(proxy, nome)
     print(r)
     exit()
 

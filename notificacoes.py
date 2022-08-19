@@ -22,7 +22,12 @@
 # Eracydes Carvalho (Sansão Simonton) - Monitoring Specialist - Telegram: @sansaoipb
 # Thiago Paz - NOC Analyst - thiagopaz1986@gmail.com
 
-import os, sys, re, json, time, smtplib
+import os
+import re
+import sys
+import time
+import json
+import smtplib
 
 if len(sys.argv) <= 2 or "--send" in sys.argv:
     dest0 = "||".join(sys.argv).split("--send")[1].replace("||", "")
@@ -30,7 +35,8 @@ if len(sys.argv) <= 2 or "--send" in sys.argv:
         f"\nEste script é pra ser executado pelo ZABBIx e não manualmente.\nPara realização de teste use o script:\n\nsudo -u zabbix ./notificacoes-teste.py --send {dest0}\n")
     exit()
 
-import requests, urllib3
+import urllib3
+import requests
 from pyrogram import Client
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -138,7 +144,6 @@ arqJson = ".env.json"
 fileX = os.path.join(pathLogs, arqJson)
 
 import logging.config
-import traceback
 
 file = """{
     "version": 1,
@@ -221,11 +226,11 @@ log = Log
 
 nograph = "--nograph"
 
-argvs = " || ".join(sys.argv)
+argvs = " || ".join(sys.argv[1:])
 
 if nograph not in argvs:
     try:
-        triggerid, eventid, color, period, body = sys.argv[3].split('#', 4)
+        triggerid, eventid, color, period, body = ' '.join(sys.argv[3:]).split('#', 4)
         period = int(period)
 
     except ValueError as e:
@@ -244,9 +249,33 @@ else:
 body = re.sub(r'(\d{4})\.(\d{2})\.(\d{2})', r'\3/\2/\1', body).replace("--nograph", "").rstrip().strip()
 
 
-def destinatarios(dest):
-    destinatario = ["{0}".format(hostsW).strip().rstrip() for hostsW in dest.split(",")]
+def destinatarios(dests):
+    destinatario = ["{0}".format(dest).strip().rstrip() for dest in dests.split(",")]
     return destinatario
+
+
+def getProxy():
+    Proxy = {}
+    validaProxy = {0: 'hostname', 1: 'port', 2: 'username', 3: 'password'}
+
+    proxyHostname = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionProxy', 'proxy.hostname')
+    proxyPort = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionProxy', 'proxy.port')
+    proxyUsername = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionProxy', 'proxy.username')
+    proxyPassword = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionProxy', 'proxy.password')
+
+    validaVars = [proxyHostname, proxyPort, proxyUsername, proxyPassword]
+    for y in range(len(validaVars)):
+        if not re.search("no", f"{validaVars[y]}"):
+            valor = validaVars[y]
+            if y == 1:
+                valor = int(validaVars[y])
+
+            Proxy[validaProxy[y]] = valor
+
+    if not Proxy:
+        Proxy = None
+
+    return Proxy
 
 
 def send_mail(dest, itemType, get_graph, key):
@@ -280,8 +309,7 @@ def send_mail(dest, itemType, get_graph, key):
         mail_from = mail_from
 
     dests = ', '.join(dest)
-    msg = body
-    msg = msg.replace("\\n", "").replace("\n", "<br>")
+    msg = body.replace("\\n", "").replace("\n", "<br>")
     try:
         subject = re.sub(r"(<(\/)?[a-z]>)", "", sys.argv[2])
     except:
@@ -343,7 +371,7 @@ def send_mail(dest, itemType, get_graph, key):
             # print("Error: Unable to send email | Não foi possível enviar o e-mail - {0}".format(msg.smtp_error.decode("utf-8").split(". ")[0]))
             log.writelog('Error: Unable to send email | Não foi possível enviar o e-mail - {0}'.format(
                 msg.smtp_error.decode("utf-8").split(". ")[0]), arqLog,
-                         "WARNING")
+                "WARNING")
             smtp.quit()
             exit()
 
@@ -363,7 +391,7 @@ def send_mail(dest, itemType, get_graph, key):
         exit()
 
 
-def send_telegram(Ldest, itemType, get_graph, key):
+def send_telegram(Ldest, itemType, get_graph, key, valueProxy):
     # Telegram settings | Configuracao do Telegram #####################################################################
     api_id0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.id')
     api_hash0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.hash')
@@ -380,9 +408,11 @@ def send_telegram(Ldest, itemType, get_graph, key):
     except:
         api_hash = api_hash0
 
-    app = Client("SendGraph", api_id=api_id, api_hash=api_hash)
+    app = Client("SendGraph", api_id=api_id, api_hash=api_hash, proxy=valueProxy)
 
     msg = body.replace("\\n", "")
+    msg = re.sub(r"(<br( ?\/)?>)", r"\n", msg).replace("\n\r\n", "\n")
+
     saudacao = salutation
     Saudacao = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram',
                                                                                    'salutation.telegram')
@@ -432,7 +462,7 @@ def send_telegram(Ldest, itemType, get_graph, key):
 
                 try:
                     if flag:
-                        Dialogos = app.iter_dialogs()
+                        Dialogos = app.get_dialogs()
                         for dialogo in Dialogos:
                             Id = f"{dialogo.chat.id}"
                             if dialogo.chat.title:
@@ -561,21 +591,15 @@ def send_whatsapp(Ldestiny, itemType, get_graph, key):
 
     msg0 = body.replace("\r", "").split('\n ')[0].replace("\n", "\\n")
     msg = "{}\\n{}".format(sys.argv[2].replace(r"✅", r"\u2705"), msg0)
-    message0 = "{}{}".format(saudacao, msg)
+    message = "{}{}".format(saudacao, msg)
 
-    valida = 0
-    message1 = ""
     formatter = [("b", "*"), ("i", "_"), ("u", "")]
     for f in formatter:
         old, new = f
-        if re.search(r"(<(/)?{}>)".format(old), message0):
-            message1 = re.sub(r"(<(/)?{}>)".format(old), r"{}".format(new), message0)
-            valida += 1
+        if re.search(r"(<(/)?{}>)".format(old), message):
+            message = re.sub(r"(<(/)?{}>)".format(old), r"{}".format(new), message)
 
-    if not valida:
-        message1 = message0
-
-    message = quote(base64.b64encode(message1.encode("utf-8")))
+    message = quote(base64.b64encode(message.encode("utf-8")))
     for destiny in Ldestiny:
         if re.search("(0|3)", itemType):
             Graph = quote(base64.b64encode(get_graph.content))
@@ -765,7 +789,8 @@ def getgraph(triggerName, hostName, listaItemIds, period):
 
         try:
             enter = str(enter.group(1))
-            s.post(f'{zbx_server}/index.php?login=1', params={'name': zbx_user, 'password': zbx_pass, 'enter': enter}, verify=False).text
+            s.post(f'{zbx_server}/index.php?login=1', params={'name': zbx_user, 'password': zbx_pass, 'enter': enter},
+                   verify=False).text
         except:
             pass
 
@@ -783,7 +808,7 @@ def getgraph(triggerName, hostName, listaItemIds, period):
             periodM = segundos_rest // 60
             periodS = segundos_rest % 60
 
-            Nome = f"{triggerName} {{}}"
+            Nome = f"{quote(triggerName)} {{}}"
             if periodD > 0:
                 period = "from=now-{0}d-{1}h-{2}m&to=now".format(periodD, periodH, periodM)
                 nome_tempo = Nome.format(f"({periodD}d {periodH}h:{periodM}m)")
@@ -831,7 +856,7 @@ def getgraph(triggerName, hostName, listaItemIds, period):
 def getTrigger(triggerid):
     try:
         triggerid = requests.post(f'{zbx_server}/api_jsonrpc.php', headers={'Content-type': 'application/json'},
-                               verify=False, data=json.dumps(
+                                  verify=False, data=json.dumps(
                 {
                     "jsonrpc": "2.0",
                     "method": "trigger.get",
@@ -846,11 +871,11 @@ def getTrigger(triggerid):
                     "id": 2
                 }
             )
-                               )
+                                  )
 
         if triggerid.status_code != 200:
-            print(f"HTTPError {triggerid.status_code}: {triggerid.reason}")
-            # log.writelog(f'HTTPError {itemid.status_code}: {itemid.reason}', arqLog, "WARNING")
+            # print(f"HTTPError {triggerid.status_code}: {triggerid.reason}")
+            log.writelog(f'HTTPError {triggerid.status_code}: {triggerid.reason}', arqLog, "WARNING")
             logout_api()
             exit()
 
@@ -873,18 +898,18 @@ def getTrigger(triggerid):
             return item_type, triggerName, hostName, listaItemIds
 
         elif 'error' in triggerid:
-            print('Zabbix: %s' % triggerid["error"]["data"])
-            # log.writelog('Zabbix: {0}'.format(ValueItemid["error"]["data"]), arqLog, "ERROR")
+            # print('Zabbix: %s' % triggerid["error"]["data"])
+            log.writelog('Zabbix: {0}'.format(triggerid["error"]["data"]), arqLog, "ERROR")
             exit()
 
         else:
-            print(triggerid)
-            # log.writelog('{0}'.format(ValueItemid), arqLog, "ERROR")
+            # print(triggerid)
+            log.writelog('{0}'.format(triggerid), arqLog, "ERROR")
             exit()
 
     except Exception as msg:
-        print(msg)
-        # log.writelog('{0}'.format(msg), arqLog, "ERROR")
+        # print(msg)
+        log.writelog('{0}'.format(msg), arqLog, "ERROR")
         exit()
 
 
@@ -913,6 +938,8 @@ def ack(dest, message):
 
 def main():
     codDDI = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'cod.ddi')
+    proxy = getProxy()
+
     if nograph not in argvs:
         item_type, triggerName, hostName, listaItemIds = getTrigger(triggerid)
         get_graph = getgraph(triggerName, hostName, listaItemIds, period)
@@ -941,13 +968,13 @@ def main():
             telegram = x.replace("_", " ")
             telegrams.append(telegram)
 
-    if [] != whatsapps:
+    if whatsapps:
         send_whatsapp(whatsapps, item_type, get_graph, codeKey)
 
-    if [] != telegrams:
-        send_telegram(telegrams, item_type, get_graph, codeKey)
+    if telegrams:
+        send_telegram(telegrams, item_type, get_graph, codeKey, proxy)
 
-    if [] != emails:
+    if emails:
         send_mail(emails, item_type, get_graph, codeKey)
 
 
