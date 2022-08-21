@@ -357,7 +357,6 @@ def send_mail(dest, itemType, get_graph, key):
         try:
             smtp.login(mail_user, mail_pass)
         except smtplib.SMTPAuthenticationError as msg:
-            # print("Error: Unable to send email | Não foi possível enviar o e-mail - {0}".format(msg.smtp_error.decode("utf-8").split(". ")[0]))
             log.writelog('Error: Unable to send email | Não foi possível enviar o e-mail - {0}'.format(
                 msg.smtp_error.decode("utf-8").split(". ")[0]), arqLog, "WARNING")
             smtp.quit()
@@ -368,7 +367,6 @@ def send_mail(dest, itemType, get_graph, key):
         try:
             smtp.sendmail(mail_from, dest, msgRoot.as_string())
         except Exception as msg:
-            # print("Error: Unable to send email | Não foi possível enviar o e-mail - {0}".format(msg.smtp_error.decode("utf-8").split(". ")[0]))
             log.writelog('Error: Unable to send email | Não foi possível enviar o e-mail - {0}'.format(
                 msg.smtp_error.decode("utf-8").split(". ")[0]), arqLog,
                 "WARNING")
@@ -379,11 +377,9 @@ def send_mail(dest, itemType, get_graph, key):
             if nograph not in argvs:
                 ack(dests, messageE)
 
-        # print("Email sent successfully | Email enviado com sucesso ({0})".format(dests))
         log.writelog('Email sent successfully | Email enviado com sucesso ({0})'.format(dests), arqLog, "INFO")
         smtp.quit()
     except smtplib.SMTPException as msg:
-        # print("Error: Unable to send email | Não foi possível enviar o e-mail ({0})".format(msg))
         log.writelog('Error: Unable to send email | Não foi possível enviar o e-mail ({0})'.format(msg), arqLog,
                      "WARNING")
         logout_api()
@@ -499,7 +495,6 @@ def send_telegram(Ldest, itemType, get_graph, key, valueProxy):
                                 dest += f" {chat.last_name}"
 
                     except Exception as msg:
-                        # print(msg.args[0])
                         log.writelog(f'{msg.args[0]}', arqLog, "ERROR")
                         exit()
 
@@ -519,12 +514,10 @@ def send_telegram(Ldest, itemType, get_graph, key, valueProxy):
 
                 try:
                     app.send_photo(Id, graph, caption=sendMsg)
-                    # print('Telegram sent photo message successfully | Telegram com gráfico enviado com sucesso ({0})'.format(dest))
                     log.writelog(
                         'Telegram sent photo message successfully | Telegram com gráfico enviado com sucesso ({0})'.format(
                             dest), arqLog, "INFO")
                 except Exception as e:
-                    # print('Telegram FAIL at sending photo message | FALHA ao enviar mensagem com gráfico pelo telegram\n%s' % e)
                     log.writelog(
                         '{0} >> Telegram FAIL at sending photo message | FALHA ao enviar mensagem com gráfico pelo telegram ({1})'.format(
                             e, dest), arqLog, "ERROR")
@@ -534,17 +527,14 @@ def send_telegram(Ldest, itemType, get_graph, key, valueProxy):
                 try:
                     os.remove(graph)
                 except Exception as e:
-                    # print(e)
                     log.writelog('{0}'.format(str(e)), arqLog, "ERROR")
 
             else:
                 try:
                     app.send_message(Id, sendMsg)
-                    # print('Telegram sent successfully | Telegram enviado com sucesso ({0})'.format(dest))
                     log.writelog('Telegram sent successfully | Telegram enviado com sucesso ({0})'.format(dest), arqLog,
                                  "INFO")
                 except Exception as e:
-                    # print('Telegram FAIL at sending photo message | FALHA ao enviar a mensagem com gráfico pelo telegram\n%s' % e)
                     log.writelog(
                         '{0} >> Telegram FAIL at sending message | FALHA ao enviar a mensagem pelo telegram ({1})'.format(
                             e, dest), arqLog, "ERROR")
@@ -615,16 +605,13 @@ def send_whatsapp(Ldestiny, itemType, get_graph, key):
                     error = json.loads(result.content.decode("utf-8"))['errors'][0]['message']
                     # error = result.content.decode("utf-8")
                     log.writelog('{0}'.format(error), arqLog, "ERROR")
-                    # print('WhatsApp FAIL at sending photo message | FALHA ao enviar mensagem com gráfico pelo WhatsApp\n%s' % error)
                 else:
-                    # print('WhatsApp sent photo message successfully | WhatsApp com gráfico enviado com sucesso ({0})'.format(destiny))
                     log.writelog(
                         'WhatsApp sent photo message successfully | WhatsApp com gráfico enviado com sucesso ({0})'.format(
                             destiny), arqLog, "INFO")
                     log.writelog('{0}'.format(json.loads(result.text)["result"]), arqLog, "INFO")
 
             except Exception as e:
-                # print(e)
                 log.writelog('{0}'.format(str(e)), arqLog, "ERROR")
                 exit()
         else:
@@ -639,16 +626,13 @@ def send_whatsapp(Ldestiny, itemType, get_graph, key):
                     error = json.loads(result.content.decode("utf-8"))['errors'][0]['message']
                     # error = result.content.decode("utf-8")
                     log.writelog('{0}'.format(error), arqLog, "ERROR")
-                    # print('WhatsApp FAIL at sending message | FALHA ao enviar a mensagem pelo WhatsApp\n%s' % error)
 
                 else:
-                    # print('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny))
                     log.writelog('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny),
                                  arqLog, "INFO")
                     log.writelog('{0}'.format(json.loads(result.text)["result"]), arqLog, "INFO")
 
             except Exception as e:
-                # print(e)
                 log.writelog('{0}'.format(str(e)), arqLog, "ERROR")
                 exit()
 
@@ -680,22 +664,18 @@ def token():
             return auth
 
         elif 'error' in login_api:
-            # print('Zabbix: %s' % login_api["error"]["data"])
             log.writelog('Zabbix: {0}'.format(login_api["error"]["data"]), arqLog, "ERROR")
             exit()
         else:
-            # print(login_api)
             log.writelog('{0}'.format(login_api), arqLog, "ERROR")
             exit()
 
     except ValueError as e:
-        # print('Check declared zabbix URL/IP and try again | Valide a URL/IP do Zabbix declarada e tente novamente\nCurrent: %s' % zbx_server)
         log.writelog(
             'Check declared zabbix URL/IP and try again | Valide a URL/IP do Zabbix declarada e tente novamente. (Current: {0})'.format(
                 zbx_server), arqLog, "WARNING")
         exit()
     except Exception as e:
-        # print(e)
         log.writelog('{0}'.format(str(e)), arqLog, "WARNING")
         exit()
 
@@ -874,7 +854,6 @@ def getTrigger(triggerid):
                                   )
 
         if triggerid.status_code != 200:
-            # print(f"HTTPError {triggerid.status_code}: {triggerid.reason}")
             log.writelog(f'HTTPError {triggerid.status_code}: {triggerid.reason}', arqLog, "WARNING")
             logout_api()
             exit()
@@ -898,7 +877,6 @@ def getTrigger(triggerid):
             return item_type, triggerName, hostName, listaItemIds
 
         elif 'error' in triggerid:
-            # print('Zabbix: %s' % triggerid["error"]["data"])
             log.writelog('Zabbix: {0}'.format(triggerid["error"]["data"]), arqLog, "ERROR")
             exit()
 
@@ -908,7 +886,6 @@ def getTrigger(triggerid):
             exit()
 
     except Exception as msg:
-        # print(msg)
         log.writelog('{0}'.format(msg), arqLog, "ERROR")
         exit()
 
