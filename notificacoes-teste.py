@@ -29,28 +29,12 @@ import time
 import json
 import smtplib
 
-pythonVersion = 3.6
 if len(sys.argv) == 1:
     sys.argv.append("-h")
 
-try:
-    if float(".".join(sys.version.split(" ", 1)[0].split(".")[:-1])) < pythonVersion:
-        print(
-            "\nA versão apontada para o '/usr/bin/python3' é \"{}\".\nInstale/Atualize/Aponte para o {} ou superior e reexecute o comando:\n\ncd /tmp ; wget https://raw.githubusercontent.com/sansaoipb/scripts/master/notificacoes.sh -O notificacoes.sh ; sudo dos2unix notificacoes.sh ; sudo bash notificacoes.sh\n".format(
-                sys.version.split(" ", 1)[0], pythonVersion))
-        exit(1)
-    import requests, urllib3
-    from pyrogram import Client
-
-except Exception as e:
-    if "No module" in e.args[0]:
-        print(
-            "\nErro: {}\n\nExecute o comando:\n\nsudo -H -u zabbix python3 -m pip install wheel requests urllib3 pyrogram tgcrypto pycryptodome --user\n".format(
-                e.args[0]))
-
-    else:
-        print("{}".format(e.args[0]))
-    exit(2)
+import urllib3
+import requests
+from pyrogram import Client
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
